@@ -11,13 +11,19 @@ namespace MyShop.WebUI.Controllers
 {
     public class ProductManagerController : Controller
     {
-        ProductRepository context;
-        ProductCategoryRepository productCategories;
+        //ProductRepository context;
+        //ProductCategoryRepository productCategories;
+
+        InMemoryRepository<Product> context;
+        InMemoryRepository<ProductCategory> productCategories;
 
         public ProductManagerController()
         {
-            context = new ProductRepository();
-            productCategories = new ProductCategoryRepository();
+            //context = new ProductRepository();
+            //productCategories = new ProductCategoryRepository();
+
+            context = new InMemoryRepository<Product>();
+            productCategories = new InMemoryRepository<ProductCategory>();
         }
 
         // GET: ProjectManager
@@ -125,7 +131,7 @@ namespace MyShop.WebUI.Controllers
             }
             else
             {
-                context.Delete(Id);
+                context.Delete(productToDelete);
                 context.Commit();
 
                 return RedirectToAction("Index");
