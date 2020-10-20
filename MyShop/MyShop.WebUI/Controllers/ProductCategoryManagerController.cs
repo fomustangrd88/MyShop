@@ -116,7 +116,7 @@ namespace MyShop.WebUI.Controllers
             }
             else
             {
-                context.Delete(productCategoryToDelete);
+                context.Delete(Id);
                 context.Commit();
 
                 return RedirectToAction("Index");
