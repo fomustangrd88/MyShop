@@ -19,8 +19,8 @@ namespace MyCore.Services
 
         public BasketService(IRepository<Product> ProductContext, IRepository<Basket> BasketContext)
         {
-            this.productContext = ProductContext;
             this.basketContext = BasketContext;
+            this.productContext = ProductContext;
         }
 
         private Basket GetBasket(HttpContextBase httpContext, bool createIfNull)
@@ -29,10 +29,9 @@ namespace MyCore.Services
 
             Basket basket = new Basket();
 
-            if(cookie != null)
+            if (cookie != null)
             {
                 string basketId = cookie.Value;
-
                 if (!string.IsNullOrEmpty(basketId))
                 {
                     basket = basketContext.Find(basketId);
@@ -54,6 +53,7 @@ namespace MyCore.Services
             }
 
             return basket;
+
         }
 
         private Basket CreateNewBasket(HttpContextBase httpContext)
@@ -65,7 +65,7 @@ namespace MyCore.Services
             HttpCookie cookie = new HttpCookie(BasketSessionName);
             cookie.Value = basket.Id;
             cookie.Expires = DateTime.Now.AddDays(1);
-            httpContext.Request.Cookies.Add(cookie);
+            httpContext.Response.Cookies.Add(cookie);
 
             return basket;
         }
@@ -73,7 +73,7 @@ namespace MyCore.Services
         public void AddToBasket(HttpContextBase httpContext, string productId)
         {
             Basket basket = GetBasket(httpContext, true);
-            BasketItem item = basket.BasketItems.FirstOrDefault(i => i.Id == productId);
+            BasketItem item = basket.BasketItems.FirstOrDefault(i => i.ProductId == productId);
 
             if (item == null)
             {
@@ -94,12 +94,12 @@ namespace MyCore.Services
             basketContext.Commit();
         }
 
-        public void RemoveFromBakset(HttpContextBase httpContext, string itemId)
+        public void RemoveFromBasket(HttpContextBase httpContext, string itemId)
         {
             Basket basket = GetBasket(httpContext, true);
             BasketItem item = basket.BasketItems.FirstOrDefault(i => i.Id == itemId);
 
-            if(item != null)
+            if (item != null)
             {
                 basket.BasketItems.Remove(item);
                 basketContext.Commit();
@@ -110,18 +110,19 @@ namespace MyCore.Services
         {
             Basket basket = GetBasket(httpContext, false);
 
-            if(basket != null)
+            if (basket != null)
             {
                 var results = (from b in basket.BasketItems
-                              join p in productContext.Collection() on b.ProductId equals p.Id
-                              select new BasketItemViewModel()
-                              {
-                                  Id = b.Id,
-                                  Quantity = b.Quantity,
-                                  ProductName = p.Name,
-                                  Image = p.Image,
-                                  Price = p.Price
-                              }).ToList();
+                               join p in productContext.Collection() on b.ProductId equals p.Id
+                               select new BasketItemViewModel()
+                               {
+                                   Id = b.Id,
+                                   Quantity = b.Quantity,
+                                   ProductName = p.Name,
+                                   Image = p.Image,
+                                   Price = p.Price
+                               }
+                              ).ToList();
 
                 return results;
             }
@@ -134,8 +135,7 @@ namespace MyCore.Services
         public BasketSummaryViewModel GetBasketSummary(HttpContextBase httpContext)
         {
             Basket basket = GetBasket(httpContext, false);
-            BasketSummaryViewModel model = new BasketSummaryViewModel();
-
+            BasketSummaryViewModel model = new BasketSummaryViewModel(0, 0);
             if (basket != null)
             {
                 int? basketCount = (from item in basket.BasketItems
@@ -155,6 +155,5 @@ namespace MyCore.Services
                 return model;
             }
         }
-
     }
 }
